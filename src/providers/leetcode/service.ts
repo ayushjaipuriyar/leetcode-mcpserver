@@ -15,6 +15,9 @@ const log = logger(LOGGER_CONTEXT);
  * and provides all methods for fetching data and interacting with the LeetCode platform.
  */
 export class LeetCodeService {
+  private readonly sessionCookie: string;
+  private readonly csrfToken: string | null; // Store CSRF token as string or null for clarity
+  // Use a separate credential instance to manage session and CSRF tokens
   private readonly credential: Credential;
   private readonly leetCodeApi: LeetCode;
   private initialized: boolean = false; // Track initialization status
@@ -25,8 +28,11 @@ export class LeetCodeService {
    *
    * @param sessionCookie The LeetCode session cookie.
    */
-  private constructor(sessionCookie: string) {
-    if (!sessionCookie || sessionCookie.trim() === '') {
+  private constructor(sessionCookie: string, csrfToken?: string) {
+    this.sessionCookie = sessionCookie;
+    this.csrfToken = csrfToken ?? null; // Store as null or undefined for clarity in downstream usage
+
+    if (!this.sessionCookie || this.sessionCookie.trim() === '') {
       log.error(
         'Private constructor received an empty or invalid session cookie. This should be caught by create method.',
       );
@@ -46,7 +52,10 @@ export class LeetCodeService {
    * @returns A promise that resolves to a fully initialized LeetCodeService instance.
    * @throws {Error} If the session cookie is invalid, initialization fails, or API client setup encounters an issue.
    */
-  public static async create(sessionCookie: string): Promise<LeetCodeService> {
+  public static async create(
+    sessionCookie: string,
+    csrfToken?: string,
+  ): Promise<LeetCodeService> {
     log.info(`Attempting to create and initialize ${LOGGER_CONTEXT}.`);
 
     if (!sessionCookie || sessionCookie.trim() === '') {
@@ -60,7 +69,7 @@ export class LeetCodeService {
       );
     }
 
-    const service = new LeetCodeService(sessionCookie);
+    const service = new LeetCodeService(sessionCookie, csrfToken);
     try {
       await service.init(sessionCookie); // Initialize the internal credential
       log.info(`${LOGGER_CONTEXT} initialized successfully.`);
@@ -435,36 +444,128 @@ export class LeetCodeService {
         return response.data?.ugcArticleSolutionArticle;
       });
   }
+
+  /**
+   * Submits code to LeetCode and polls for the result.
+   *
+   * IMPORTANT: This function uses unofficial LeetCode APIs and is for
+   * educational purposes ONLY. Direct programmatic submission likely violates
+   * LeetCode's Terms of Service and may lead to account suspension.
+   * This code requires proper management of LeetCode session cookies (e.g.,
+   * LEETCODE_SESSION, csrftoken) which are NOT handled by this function and
+   * must be present in the browser's context or manually managed if run server-side.
+   *
+   * @param {string} code The solution code to submit.
+   * @param {string} language The language of the code (e.g., "python3", "java", "cpp").
+   * @param {string} questionId The numeric ID of the question (e.g., "1" for Two Sum).
+   * @param {string} questionSlug The URL slug of the question (e.g., "two-sum").
+   * @returns {Promise<object>} A promise that resolves with the final JSON response from the LeetCode API.
+   */
+  public async submitLeetCodeSolution(
+    code: string,
+    language: string,
+    questionId: string,
+    questionSlug: string,
+  ): Promise<object> {
+    if (!code || !language || !questionId || !questionSlug || !this.csrfToken) {
+      console.error('Missing required parameters for submission.');
+      return { error: 'Missing required parameters' };
+    }
+
+    console.log(
+      `Attempting to submit solution for ${questionSlug} (ID: ${questionId})...`,
+    );
+
+    const submitUrl = `https://leetcode.com/problems/${questionSlug}/submit/`;
+    const submitBody = JSON.stringify({
+      lang: language,
+      question_id: questionId,
+      typed_code: code,
+    });
+
+    const headers = {
+      'Content-Type': 'application/json',
+      Cookie: `csrftoken=${this.csrfToken}; LEETCODE_SESSION=${this.sessionCookie}`,
+      'x-csrftoken': this.csrfToken,
+    };
+
+    try {
+      // Step 1: Submit the code
+      const submitResponse = await fetch(submitUrl, {
+        method: 'POST',
+        headers,
+        body: submitBody,
+        referrer: `https://leetcode.com/problems/${questionSlug}/`,
+        referrerPolicy: 'strict-origin-when-cross-origin',
+      });
+
+      if (!submitResponse.ok) {
+        const errorText = await submitResponse.text();
+        throw new Error(
+          `Submission failed with status ${submitResponse.status}: ${errorText}`,
+        );
+      }
+
+      const submitJson = await submitResponse.json();
+      console.log('Initial submission response:', submitJson);
+
+      const submissionId = submitJson.submission_id;
+      if (!submissionId) {
+        throw new Error('Submission ID not found in the response.');
+      }
+
+      const checkUrl = `https://leetcode.com/submissions/detail/${submissionId}/check/`;
+
+      // Step 2: Poll for submission result
+      const maxAttempts = 60;
+      const pollIntervalMs = 1000;
+      let finalResult: any = null;
+
+      console.log(`Polling for submission status (ID: ${submissionId})...`);
+
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
+
+        const checkResponse = await fetch(checkUrl, {
+          method: 'GET',
+          headers,
+          referrer: `https://leetcode.com/problems/${questionSlug}/`,
+          referrerPolicy: 'strict-origin-when-cross-origin',
+        });
+
+        if (!checkResponse.ok) {
+          const errorText = await checkResponse.text();
+          throw new Error(
+            `Polling failed with status ${checkResponse.status}: ${errorText}`,
+          );
+        }
+
+        const checkJson = await checkResponse.json();
+        console.log(`Attempt ${attempt}: State - ${checkJson.state}`);
+
+        if (checkJson.state && checkJson.state !== 'PENDING') {
+          finalResult = checkJson;
+          break;
+        }
+      }
+
+      if (!finalResult) {
+        console.warn(
+          `Polling timed out after ${maxAttempts} attempts. Submission may still be pending.`,
+        );
+        return {
+          error: 'Polling timed out',
+          submission_id: submissionId,
+        };
+      }
+
+      console.log('Final submission result:', finalResult);
+      return finalResult;
+    } catch (error: any) {
+      console.error('Error during LeetCode submission:', error);
+      return {
+        error: error?.message ?? 'Unknown error occurred',
+      };
+    }
+  }
 }
-// --- How to use it ---
-// import { LeetCodeService } from './path/to/LeetCodeService';
-// import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-// import { registerAllLeetCodeTools } from './path/to/providers/leetcode/tool-registries/index.js'; // Adjust path
-//
-// async function main() {
-//   const sessionCookie = process.env.LEETCODE_SESSION_COOKIE || 'your_leetcode_session_cookie';
-//
-//   try {
-//     // Create and initialize the single LeetCodeService instance
-//     const leetCodeService = await LeetCodeService.create(sessionCookie);
-//     console.log('LeetCodeService is ready. Authenticated:', leetCodeService.isAuthenticated());
-//
-//     // Example usage:
-//     const daily = await leetCodeService.fetchDailyChallenge();
-//     console.log('Daily Challenge:', daily.title);
-//
-//     // If integrating with MCP:
-//     const mcpServer = new McpServer();
-//     // Pass the single LeetCodeService instance to your tool registration function
-//     registerAllLeetCodeTools(mcpServer, leetCodeService);
-//     console.log('All MCP tools registered.');
-//
-//     mcpServer.startStdio(); // Or other MCP server start methods
-//     console.log('MCP Server started.');
-//
-//   } catch (error) {
-//     console.error('Application failed to start due to LeetCodeService error:', error);
-//   }
-// }
-//
-// main();
