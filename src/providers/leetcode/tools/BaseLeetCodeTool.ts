@@ -39,9 +39,5 @@ export abstract class BaseLeetCodeTool implements ILeetCodeTool {
     this.leetcodeService = leetcodeService;
     log.debug(`BaseLeetCodeTool: Instance created.`);
   }
-  registerWithServer(server: any): void {
-    throw new Error('Method not implemented.');
-  }
-
   public abstract register(server: McpServer): void;
 }

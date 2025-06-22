@@ -70,7 +70,7 @@ export function registerLeetCodeToolsWithServer(
 
   // Loop through instantiated tools and register each one with the MCP server
   tools.forEach((tool: BaseLeetCodeTool) => {
-    tool.registerWithMcpServer(server); // Call the registration method defined on BaseLeetCodeTool
+    tool.register(server); // Call the registration method defined on BaseLeetCodeTool
   });
 
   log.info('All LeetCode tools successfully registered with MCP server.');
