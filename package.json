@@ -20,6 +20,7 @@
   "license": "ISC",
   "packageManager": "pnpm@10.11.0",
   "devDependencies": {
+    "@types/node": "^22.15.27",
     "@typescript-eslint/eslint-plugin": "^8.33.0",
     "@typescript-eslint/parser": "^8.33.0",
     "eslint": "^9.27.0",
@@ -29,5 +30,11 @@
     "lint-staged": "^16.1.0",
     "prettier": "^3.5.3",
     "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "leetcode-query": "^2.0.0",
+    "winston": "^3.17.0",
+    "zod": "^3.25.63"
   }
 }
