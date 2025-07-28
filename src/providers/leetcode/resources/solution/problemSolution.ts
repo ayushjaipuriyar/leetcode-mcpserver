@@ -4,8 +4,8 @@ import {
   McpServer,
   ResourceTemplate,
 } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { logger } from '../../../../utils/logger';
-import { LeetCodeService } from '../../service';
+import { logger } from '../../../../utils/logger.js';
+import { LeetCodeService } from '../../service.js';
 
 const log = logger('Resource: ProblemSolution');
 

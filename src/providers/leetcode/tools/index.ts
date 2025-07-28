@@ -17,6 +17,7 @@ import { GetRecentACSubmissionsTool } from './user/getRecentAcSubmission.js';
 import { GetRecentSubmissionsTool } from './user/getRecentSubmission.js';
 import { GetUserProfileTool } from './user/getUserProfile.js';
 import { GetUserStatusTool } from './user/getUserStatus.js';
+import { SubmitLeetCodeSolutionTool } from './solution/submitSolution.js';
 
 // Export the base interface and abstract class for consistency and typing
 export { BaseLeetCodeTool } from './BaseLeetCodeTool.js';
@@ -55,6 +56,7 @@ export function registerLeetCodeToolsWithServer(
     // Solution Tools
     new GetProblemSolutionTool(leetcodeService),
     new ListProblemSolutionsTool(leetcodeService),
+    new SubmitLeetCodeSolutionTool(leetcodeService),
 
     // User Tools
     new GetAllSubmissionsTool(leetcodeService),

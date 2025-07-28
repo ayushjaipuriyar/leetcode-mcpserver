@@ -1,10 +1,10 @@
 // leetcode/leetcode-service.ts
 
 import { Credential, LeetCode } from 'leetcode-query';
-import { logger } from '../../utils/logger';
-import { SEARCH_PROBLEMS_QUERY } from './queries/searchProblem';
-import { SOLUTION_ARTICLE_DETAIL_QUERY } from './queries/solutionArticleDetail';
-import { SOLUTION_ARTICLES_QUERY } from './queries/solutionArticles';
+import { logger } from '../../utils/logger.js';
+import { SEARCH_PROBLEMS_QUERY } from './queries/searchProblem.js';
+import { SOLUTION_ARTICLE_DETAIL_QUERY } from './queries/solutionArticleDetail.js';
+import { SOLUTION_ARTICLES_QUERY } from './queries/solutionArticles.js';
 
 const LOGGER_CONTEXT = 'LeetCodeService';
 const log = logger(LOGGER_CONTEXT);
@@ -543,7 +543,11 @@ export class LeetCodeService {
         const checkJson = await checkResponse.json();
         console.log(`Attempt ${attempt}: State - ${checkJson.state}`);
 
-        if (checkJson.state && checkJson.state !== 'PENDING') {
+        if (
+          checkJson.state &&
+          checkJson.state !== 'PENDING' &&
+          checkJson.state !== 'STARTED'
+        ) {
           finalResult = checkJson;
           break;
         }

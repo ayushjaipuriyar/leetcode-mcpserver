@@ -1,8 +1,8 @@
 // src/providers/leetcode/resources/problemCategories.ts
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
-import { PROBLEM_CATEGORIES } from "../../../../utils/constants";
-import { logger } from "../../../../utils/logger";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { PROBLEM_CATEGORIES } from "../../../../utils/constants.js";
+import { logger } from "../../../../utils/logger.js";
 
 const log = logger('Resource: ProblemCategories');
 
