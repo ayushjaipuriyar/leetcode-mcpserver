@@ -2,7 +2,7 @@
   "name": "leetcode-mcpserver",
   "version": "1.0.0",
   "description": "",
-  "author": "Ayush Jaipuriyar",
+  "author": "",
   "main": "./build/server.js",
   "scripts": {
     "lint": "eslint src/**/*.ts",
@@ -23,7 +23,6 @@
     ]
   },
   "keywords": [],
-  "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.11.0",
   "devDependencies": {
@@ -42,6 +41,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
+    "globals": "^16.3.0",
     "leetcode-query": "^2.0.0",
     "winston": "^3.17.0",
     "zod": "^3.25.63"
