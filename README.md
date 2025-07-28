@@ -118,6 +118,9 @@ Option 2: Using Command Line Arguments
 
 The server requires a LeetCode session cookie and CSRF token for authentication. These can be provided either as command-line arguments (`--session` and `--csrf`) or as environment variables (`LEETCODE_SESSION` and `LEETCODE_CSRF`).
 
+CSRF required for submitting code 
+Session just for authenticated routes
+
 ### Tools
 
 The server exposes the following tools:
