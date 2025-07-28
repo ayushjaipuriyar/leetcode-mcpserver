@@ -45,7 +45,7 @@ To run the server, you need to provide your LeetCode session cookie and CSRF tok
 You can provide the credentials as command-line arguments:
 
 ```bash
-npm run start -- --session <YOUR_SESSION_COOKIE> --csrf <YOUR_CSRF_TOKEN>
+npm run start --session <YOUR_SESSION_COOKIE> --csrf <YOUR_CSRF_TOKEN>
 ```
 
 Alternatively, you can set them as environment variables:
@@ -59,10 +59,60 @@ npm run start
 For development, you can use the `dev` script to automatically restart the server on file changes:
 
 ```bash
-npm run dev -- --session <YOUR_SESSION_COOKIE> --csrf <YOUR_CSRF_TOKEN>
+npm run dev --session <YOUR_SESSION_COOKIE> --csrf <YOUR_CSRF_TOKEN>
 ```
 
 ## Usage
+
+```bash
+npx -y @ayushjaipuriyar/leetcode-mcpserver --csrf <YOUR_CSRF_TOKEN> --session <YOUR_LEETCODE_SESSION_COOKIE>
+```
+
+Visual Studio Code Integration
+Add the following JSON configuration to your User Settings (JSON) file. Access this by pressing Ctrl/Cmd + Shift + P and searching for Preferences: Open User Settings (JSON).
+
+Option 1: Using Environment Variables
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "leetcode": {
+        "type": "stdio",
+        "command": "npx",
+        "args": ["-y", "@ayushjaipuriyar/leetcode-mcpserver"],
+        "env": {
+          "LEETCODE_CSRF": "global",
+          "LEETCODE_SESSION": "<YOUR_LEETCODE_SESSION_COOKIE>"
+        }
+      }
+    }
+  }
+}
+```
+
+Option 2: Using Command Line Arguments
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "leetcode": {
+        "type": "stdio",
+        "command": "npx",
+        "args": [
+          "-y",
+          "@ayushjaipuriyar/leetcode-mcpserver",
+          "--csrf",
+          "global",
+          "--session",
+          "<YOUR_LEETCODE_SESSION_COOKIE>"
+        ]
+      }
+    }
+  }
+}
+```
 
 ### Authentication
 
@@ -101,20 +151,22 @@ The server exposes the following resources:
 
 The project is structured as follows:
 
-```
+````
+
 .
 ├── src
-│   ├── providers
-│   │   └── leetcode
-│   │       ├── queries
-│   │       ├── resources
-│   │       ├── tools
-│   │       └── service.ts
-│   ├── utils
-│   └── server.ts
+│ ├── providers
+│ │ └── leetcode
+│ │ ├── queries
+│ │ ├── resources
+│ │ ├── tools
+│ │ └── service.ts
+│ ├── utils
+│ └── server.ts
 ├── package.json
 ├── tsconfig.json
 └── ...
+
 ```
 
 - `src/server.ts`: The main entry point of the application.
@@ -143,3 +195,5 @@ This project uses ESLint and Prettier for code linting and formatting. It's reco
 ## License
 
 This project is licensed under the ISC License.
+```
+````
